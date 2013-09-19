@@ -1,0 +1,25 @@
+{
+    "name": "goetas/xhtml-clsss-to-styl",
+    "description": "Convert CSS rules into local styles (HTML)",
+    "keywords": ["css", "xml", "html", "style", "xhtml"],
+    "homepage": "https://github.com/goetas/xhtml-clsss-to-style",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Asmir Mustafic",
+            "email": "goetas@lignano.it"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "sabberworm/php-css-parser":"5.0.*"
+    },
+    "autoload": {
+    	"psr-0": { "Goetas\XhtmlClassToStyle": "lib/" }
+    },
+    "extra":{
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
