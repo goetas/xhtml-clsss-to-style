@@ -1,5 +1,7 @@
 <?php
 namespace Goetas\XhtmlClassToStyle;
+use Symfony\Component\CssSelector\Exception\ExpressionErrorException;
+
 use Sabberworm\CSS\Property\CssNamespace;
 
 use Sabberworm\CSS\Parser;
@@ -25,14 +27,17 @@ class XhtmlClassToStyle {
 			$domXpath->registerNamespace($prefix?$prefix:null,$value);
 		}
 		foreach ($rules as $rule) {
-			$xpath = CssSelector::toXPath($rule["selector"]);
-			foreach ($domXpath->query($xpath) as $nodo){
-			    $styles = array($nodo->getAttribute("style"));
-				foreach ($rule["properties"] as $name => $value){
-					$styles[$name] = "$name:$value";
+		    try{
+				$xpath = CssSelector::toXPath($rule["selector"]);
+				foreach ($domXpath->query($xpath) as $nodo){
+				    $styles = array($nodo->getAttribute("style"));
+					foreach ($rule["properties"] as $name => $value){
+						$styles[$name] = "$name:$value";
+					}
+					$nodo->setAttribute("style", trim(implode(";", $styles),";"));
 				}
-				$nodo->setAttribute("style", trim(implode(";", $styles),";"));
-			}
+		    } catch (ExpressionErrorException $e) {
+		    }
 		}
 	}
 
