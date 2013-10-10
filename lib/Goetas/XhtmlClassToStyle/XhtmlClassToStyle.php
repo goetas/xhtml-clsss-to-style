@@ -10,7 +10,6 @@ use DOMXPath;
 use Symfony\Component\CssSelector\CssSelector;
 
 class XhtmlClassToStyle {
-
 	public function applyCss(DOMDocument $xml, $css) {
 
 		list($rules, $nampespaces) = $this->extractRulesFormCss($css);
@@ -19,8 +18,27 @@ class XhtmlClassToStyle {
 
 		$this->applyRulesToDocument($xml, $rules, $nampespaces);
 	}
+	protected function applyRulesToDocument(DOMDocument $doc, array $rules, array $nss) {
+		$domXpath = new DOMXPath($doc);
+
+		foreach ($nss as $prefix => $value){
+			$domXpath->registerNamespace($prefix?$prefix:null,$value);
+		}
+		foreach ($rules as $rule) {
+			$xpath = CssSelector::toXPath($rule["selector"]);
+			foreach ($domXpath->query($xpath) as $nodo){
+			    $styles = array($nodo->getAttribute("style"));
+				foreach ($rule["properties"] as $name => $value){
+					$styles[$name] = "$name:$value";
+				}
+				$nodo->setAttribute("style", trim(implode(";", $styles),";"));
+			}
+		}
+	}
+
+
 	protected function extractRulesFormCss($css) {
-		$oCssParser = new Parser(file_get_contents($css));
+		$oCssParser = new Parser($css);
 		$oCssDocument = $oCssParser->parse();
 
 		$rules = array();
@@ -41,8 +59,6 @@ class XhtmlClassToStyle {
 					$rule["properties"][$prop->getRule()] = strval($prop->getValue());
 				}
 
-
-
 				$rules[]= $rule;
 			}
 		}
@@ -58,7 +74,7 @@ class XhtmlClassToStyle {
 	}
 
 
-	protected function sortCssRules(array &$rules) {
+	private function sortCssRules(array &$rules) {
 		uasort($rules, function ($r1, $r2) {
 			return $r1["specificity"]-$r2["specificity"];
 		});
@@ -66,33 +82,14 @@ class XhtmlClassToStyle {
 	/**
 	 * @see http://www.w3.org/TR/CSS2/cascade.html#specificity
 	 */
-	protected function calculateSpecificity($selector) {
+	private function calculateSpecificity($selector) {
 		$a = 0*1000;
 		$b = substr_count($selector, "#")*100;
 		$c = (substr_count($selector, ".")*10)+(substr_count($selector, ":")*10);
 		$d = substr_count(preg_replace('/\s+/', " ", trim($selector)), " ")*1;
 		return $a+$b+$c+$d;
 	}
-	public function applyRulesToDocument(DOMDocument $doc, array $rules, array $nss) {
-		$domXpath = new DOMXPath($doc);
 
-
-		foreach ($nss as $prefix => $value){
-			$domXpath->registerNamespace($prefix?$prefix:null,$value);
-		}
-		foreach ($rules as $rule) {
-
-			$xpath = CssSelector::toXPath($rule["selector"]);
-			$xpath = str_replace("@class", "@role", $xpath);
-
-			foreach ($domXpath->query($xpath) as $nodo){
-
-				foreach ($rule["properties"] as $name => $value){
-					$nodo->setAttribute($name, $value);
-				}
-			}
-		}
-	}
 	protected function getAllParentNs(DOMElement $element) {
 		$namespaces=array("fo"=> "http://www.w3.org/1999/XSL/Format");
 
