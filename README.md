@@ -7,8 +7,7 @@ Example
 =======
 
 ```php
-
-
+use use Goetas\XhtmlClassToStyle\XhtmlClassToStyle;
 
 $dom = new \DOMDocument("1.0", "UTF-8");
 $dom->loadXML("myhtml.html");
