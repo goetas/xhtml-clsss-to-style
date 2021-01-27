@@ -1,15 +1,13 @@
 <?php
 namespace Goetas\XhtmlClassToStyle;
+
+use Symfony\Component\CssSelector\CssSelectorConverter;
 use Symfony\Component\CssSelector\Exception\ExpressionErrorException;
-
 use Sabberworm\CSS\Property\CssNamespace;
-
 use Sabberworm\CSS\Parser;
-
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
-use Symfony\Component\CssSelector\CssSelector;
 
 class XhtmlClassToStyle {
 	public function applyCss(DOMDocument $xml, $css) {
@@ -26,9 +24,10 @@ class XhtmlClassToStyle {
 		foreach ($nss as $prefix => $value){
 			$domXpath->registerNamespace($prefix?$prefix:null,$value);
 		}
+        $converter = new CssSelectorConverter();
 		foreach ($rules as $rule) {
 		    try{
-				$xpath = CssSelector::toXPath($rule["selector"]);
+				$xpath = $converter->toXPath($rule["selector"]);
 				foreach ($domXpath->query($xpath) as $nodo){
 				    $styles = array($nodo->getAttribute("style"));
 					foreach ($rule["properties"] as $name => $value){
